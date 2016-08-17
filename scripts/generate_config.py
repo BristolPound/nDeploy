@@ -517,6 +517,9 @@ def nginx_confgen(user_name, domain_name):
             template_file = installation_path + "/conf/server_ssl_ocsp.tmpl"
         elif os.path.isfile("/var/cpanel/userdata/" + user_name + "/" + domain_name + "_SSL"):
             ssl_status = True
+            profileyaml_data_stream = open(installation_path+"/domain-data/"+domain_name+"_SSL", 'r')
+            yaml_parsed_profileyaml = yaml.safe_load(profileyaml_data_stream)
+            profileyaml_data_stream.close()
             cpdomainyaml_ssl = "/var/cpanel/userdata/" + user_name + "/" + domain_name + "_SSL"
             cpaneldomain_ssl_data_stream = open(cpdomainyaml_ssl, 'r')
             yaml_parsed_cpaneldomain_ssl = yaml.safe_load(cpaneldomain_ssl_data_stream)
@@ -540,6 +543,9 @@ def nginx_confgen(user_name, domain_name):
         if ssl_status is True:
             nginx_confgen_profilegen(user_name, domain_sname, cpanel_ipv4, document_root, 1, domain_home, *domain_aname_list)
             config_out = open("/etc/nginx/sites-enabled/" + domain_sname + "_SSL.conf", 'w')
+            template_file = yaml_parsed_profileyaml.get('template', template_file)
+            if not os.path.isabs(template_file):
+                template_file = installation_path + "/conf/" + template_file
             with open(template_file) as my_template_file:
                 for line in my_template_file:
                     line = line.replace('CPANELIP', cpanel_ipv4)
